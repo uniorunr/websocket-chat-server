@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/uniorunr/websocket-chat-server/issues"
   },
-  "homepage": "https://github.com/uniorunr/websocket-chat-server#readme"
+  "homepage": "https://github.com/uniorunr/websocket-chat-server#readme",
+  "dependencies": {
+    "ws": "^7.1.2"
+  }
 }
