@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
+const uuidv4 = require('uuid/v4');
 
 const app = express();
 const server = http.createServer(app);
@@ -25,10 +26,16 @@ wss.on('connection', ws => {
 
   ws.on('message', message => {
     if (!isJSON(message)) return;
-    const messageObj = JSON.parse(message);
-    const messagesArray = [messageObj];
 
-    if (!!messageObj.from && !!messageObj.message) {
+    const { from: author, message: messageFromClient } = JSON.parse(message);
+    const messagesArray = [{
+      from: author,
+      message: messageFromClient,
+      id: uuidv4(),
+      time: Date.now(),
+    }];
+
+    if (!!author && !!messageFromClient) {
       wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(messagesArray));
@@ -40,7 +47,6 @@ wss.on('connection', ws => {
 
 setInterval(() => {
   wss.clients.forEach(ws => {
-
     if (!ws.isAlive) return ws.terminate();
 
     ws.isAlive = false;
