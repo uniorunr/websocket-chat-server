@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const messages = [];
+let messages = [];
 
 wss.on('connection', ws => {
   ws.isAlive = true;
@@ -30,8 +30,9 @@ wss.on('connection', ws => {
         id: uuidv4(),
         time: Date.now(),
       };
-
       messages.push(messageObj);
+
+      if (messages.length >= 1000) messages = messages.slice(1, 1000);
 
       wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
