@@ -26,7 +26,7 @@ wss.on('connection', ws => {
     ws.isAlive = true;
   });
 
-  ws.send(JSON.stringify(messages));
+  ws.send(JSON.stringify(messages.reverse()));
 
   ws.on('message', message => {
     if (!isJSON(message)) return;
