@@ -14,11 +14,16 @@ wss.on('connection', ws => {
   });
 
   ws.on('message', message => {
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
-      }
-    });
+    if (typeof message !== "object") return;
+    const messageObj = JSON.parse(message);
+
+    if (!!messageObj.from && !!messageObj.message) {
+      wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(message);
+        }
+      });
+    }
   });
 });
 
