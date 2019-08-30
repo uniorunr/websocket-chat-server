@@ -1,7 +1,7 @@
 {
   "name": "websocket-chat-server",
   "version": "1.0.0",
-  "description": "webcoket chat server side implementation",
+  "description": "websocket chat server side implementation",
   "main": "index.js",
   "scripts": {
     "start": "node server/server.js",
