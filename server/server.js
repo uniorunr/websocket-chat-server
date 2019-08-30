@@ -26,11 +26,7 @@ wss.on('connection', ws => {
     ws.isAlive = true;
   });
 
-  wss.clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(messages));
-    }
-  });
+  ws.send(JSON.stringify(messages));
 
   ws.on('message', message => {
     if (!isJSON(message)) return;
