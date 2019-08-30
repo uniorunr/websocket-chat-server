@@ -26,11 +26,12 @@ wss.on('connection', ws => {
   ws.on('message', message => {
     if (!isJSON(message)) return;
     const messageObj = JSON.parse(message);
+    const messagesArray = [messageObj];
 
     if (!!messageObj.from && !!messageObj.message) {
       wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(message);
+          client.send(JSON.stringify(messagesArray));
         }
       });
     }
