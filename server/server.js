@@ -7,6 +7,8 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+const messages = [];
+
 const isJSON = (data) => {
   let res = true;
   try {
@@ -24,21 +26,29 @@ wss.on('connection', ws => {
     ws.isAlive = true;
   });
 
+  wss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(messages));
+    }
+  });
+
   ws.on('message', message => {
     if (!isJSON(message)) return;
 
     const { from: author, message: messageFromClient } = JSON.parse(message);
-    const messagesArray = [{
+    const messageObj = {
       from: author,
       message: messageFromClient,
       id: uuidv4(),
       time: Date.now(),
-    }];
+    };
+
+    messages.push(messageObj);
 
     if (!!author && !!messageFromClient) {
       wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(messagesArray));
+          client.send(JSON.stringify([messageObj]));
         }
       });
     }
