@@ -6,6 +6,16 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+const isJSON = (data) => {
+  let res = true;
+  try {
+    JSON.parse(data);
+  } catch(e) {
+    res = false;
+  }
+  return res;
+};
+
 wss.on('connection', ws => {
   ws.isAlive = true;
 
@@ -14,7 +24,7 @@ wss.on('connection', ws => {
   });
 
   ws.on('message', message => {
-    if (typeof message !== "object") return;
+    if (!isJSON(message)) return;
     const messageObj = JSON.parse(message);
 
     if (!!messageObj.from && !!messageObj.message) {
