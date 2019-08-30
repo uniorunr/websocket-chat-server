@@ -9,10 +9,12 @@ const wss = new WebSocket.Server({ server });
 
 wss.on('connection', ws => {
   ws.on('message', message => {
-    ws.send(`Your message is ${message}`);
+    wss.clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
   });
-
-  ws.send('Hi there!');
 });
 
 server.listen(process.env.PORT || 8080, () => {
