@@ -23,16 +23,16 @@ wss.on('connection', ws => {
     if (!isJSON(message)) return;
 
     const { from: author, message: messageFromClient } = JSON.parse(message);
-    const messageObj = {
-      from: author,
-      message: messageFromClient,
-      id: uuidv4(),
-      time: Date.now(),
-    };
-
-    messages.push(messageObj);
-
     if (!!author && !!messageFromClient) {
+      const messageObj = {
+        from: author,
+        message: messageFromClient,
+        id: uuidv4(),
+        time: Date.now(),
+      };
+
+      messages.push(messageObj);
+
       wss.clients.forEach(client => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify([messageObj]));
