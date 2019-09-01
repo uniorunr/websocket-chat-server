@@ -1,3 +1,5 @@
+import { ExtendedWebSocket } from './types';
+
 const isJSON = (data: string) => {
   let res = true;
   try {
@@ -9,17 +11,16 @@ const isJSON = (data: string) => {
 };
 
 const pingClient = (
-    wsInstance: any,
+    wsInstance: { clients: Set<ExtendedWebSocket> },
     timestamps: Map<object, number>,
     dosCases: Map<object, number>) => {
   setInterval(() => {
-    wsInstance.clients.forEach((ws: any) => {
+    wsInstance.clients.forEach((ws) => {
       if (!ws.isAlive) {
         timestamps.delete(ws);
         dosCases.delete(ws);
         return ws.terminate();
       }
-
       ws.isAlive = false;
       ws.ping(null, false, true);
     });
@@ -34,6 +35,7 @@ const isDOS = (
   let result = false;
   const lastTimestamp = wsClientsMessagesData.get(ws);
   wsClientsMessagesData.set(ws, timestamp);
+
   if (lastTimestamp && timestamp - lastTimestamp < 200) {
     const lastCount = wsClientsDosCases.get(ws) || 0;
     const count = lastCount + 1;

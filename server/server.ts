@@ -3,18 +3,19 @@ const http = require('http');
 const WebSocketWS = require('ws');
 const uuidv4 = require('uuid/v4');
 const { isJSON, pingClient, isDOS } = require('./utils');
+import { Message, ExtendedWebSocket } from './types';
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketWS.Server({ server });
 
-let messages: any[] = [];
+let messages: Message[] = [];
 const wsClientsTimestamps = new Map();
 const wsClientsDosCases = new Map();
 const blockedClients = new Set();
 const blockTimeout = 30000;
 
-wss.on('connection', (ws: WebSocket | any) => {
+wss.on('connection', (ws: ExtendedWebSocket) => {
   ws.isAlive = true;
 
   ws.on('pong', () => {
@@ -35,13 +36,12 @@ wss.on('connection', (ws: WebSocket | any) => {
 
     const { from: author, message: messageFromClient } = JSON.parse(message);
     if (!!author && !!messageFromClient) {
-      const messageObj = {
+      const messageObj: Message = {
         from: author,
         message: messageFromClient,
         id: uuidv4(),
         time: now,
       };
-      // @ts-ignore
       messages.push(messageObj);
 
       if (messages.length >= 1000) messages = messages.slice(1, 1000);
