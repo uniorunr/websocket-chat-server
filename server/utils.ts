@@ -1,4 +1,4 @@
-const isJSON = (data) => {
+const isJSON = (data: string) => {
   let res = true;
   try {
     JSON.parse(data);
@@ -8,9 +8,12 @@ const isJSON = (data) => {
   return res;
 };
 
-const pingClient = (wsInstance, timestamps, dosCases) => {
+const pingClient = (
+    wsInstance: any,
+    timestamps: Map<object, number>,
+    dosCases: Map<object, number>) => {
   setInterval(() => {
-    wsInstance.clients.forEach(ws => {
+    wsInstance.clients.forEach((ws: any) => {
       if (!ws.isAlive) {
         timestamps.delete(ws);
         dosCases.delete(ws);
@@ -23,10 +26,14 @@ const pingClient = (wsInstance, timestamps, dosCases) => {
   }, 10000);
 };
 
-const isDOS = (ws, timestamp, wsClientsMsgsData, wsClientsDosCases) => {
+const isDOS = (
+    ws: WebSocket,
+    timestamp: number,
+    wsClientsMessagesData: Map<object, number>,
+    wsClientsDosCases: Map<object, number>) => {
   let result = false;
-  const lastTimestamp = wsClientsMsgsData.get(ws);
-  wsClientsMsgsData.set(ws, timestamp);
+  const lastTimestamp = wsClientsMessagesData.get(ws);
+  wsClientsMessagesData.set(ws, timestamp);
   if (lastTimestamp && timestamp - lastTimestamp < 200) {
     const lastCount = wsClientsDosCases.get(ws) || 0;
     const count = lastCount + 1;
@@ -40,6 +47,4 @@ const isDOS = (ws, timestamp, wsClientsMsgsData, wsClientsDosCases) => {
   return result;
 };
 
-exports.isJSON = isJSON;
-exports.pingClient = pingClient;
-exports.isDOS = isDOS;
+export { isJSON, pingClient, isDOS };
