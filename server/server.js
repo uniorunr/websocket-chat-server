@@ -2,13 +2,17 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const uuidv4 = require('uuid/v4');
-const { isJSON, pingClient } = require('./utils');
+const { isJSON, pingClient, isDOS } = require('./utils');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 let messages = [];
+const wsClientsTimestamps = new Map();
+const wsClientsDosCases = new Map();
+const blockedClients = new Set();
+const blockTimeout = 30000;
 
 wss.on('connection', ws => {
   ws.isAlive = true;
@@ -20,7 +24,14 @@ wss.on('connection', ws => {
   ws.send(JSON.stringify(messages.slice(0).reverse()));
 
   ws.on('message', message => {
-    if (!isJSON(message)) return;
+    if (!isJSON(message) || blockedClients.has(ws)) return;
+    const now = Date.now();
+    const dosMessageSequence = isDOS(ws, now, wsClientsTimestamps, wsClientsDosCases);
+    if (dosMessageSequence) {
+      blockedClients.add(ws);
+      setTimeout(() => blockedClients.delete(ws), blockTimeout);
+      return;
+    }
 
     const { from: author, message: messageFromClient } = JSON.parse(message);
     if (!!author && !!messageFromClient) {
@@ -28,7 +39,7 @@ wss.on('connection', ws => {
         from: author,
         message: messageFromClient,
         id: uuidv4(),
-        time: Date.now(),
+        time: now,
       };
       messages.push(messageObj);
 
@@ -43,7 +54,7 @@ wss.on('connection', ws => {
   });
 });
 
-pingClient(wss);
+pingClient(wss, wsClientsTimestamps, wsClientsDosCases);
 
 server.listen(process.env.PORT || 8080, () => {
   console.log(`Port ${server.address().port}`);
