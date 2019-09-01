@@ -27,7 +27,7 @@ const isDOS = (ws, timestamp, wsClientsMsgsData, wsClientsDosCases) => {
   let result = false;
   const lastTimestamp = wsClientsMsgsData.get(ws);
   wsClientsMsgsData.set(ws, timestamp);
-  if (lastTimestamp && lastTimestamp - timestamp < 350) {
+  if (lastTimestamp && timestamp - lastTimestamp < 200) {
     const lastCount = wsClientsDosCases.get(ws) || 0;
     const count = lastCount + 1;
     if (count >= 3) {
