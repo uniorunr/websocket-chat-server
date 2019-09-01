@@ -1,4 +1,4 @@
-import { ExtendedWebSocket } from './types';
+import { PingClientArgs, IsDOSArgs } from './types';
 
 const isJSON = (data: string) => {
   let res = true;
@@ -10,10 +10,7 @@ const isJSON = (data: string) => {
   return res;
 };
 
-const pingClient = (
-    wsInstance: { clients: Set<ExtendedWebSocket> },
-    timestamps: Map<object, number>,
-    dosCases: Map<object, number>) => {
+const pingClient = ({ wsInstance, timestamps, dosCases}: PingClientArgs) => {
   setInterval(() => {
     wsInstance.clients.forEach((ws) => {
       if (!ws.isAlive) {
@@ -27,11 +24,7 @@ const pingClient = (
   }, 10000);
 };
 
-const isDOS = (
-    ws: WebSocket,
-    timestamp: number,
-    wsClientsMessagesData: Map<object, number>,
-    wsClientsDosCases: Map<object, number>) => {
+const isDOS = ({ ws, timestamp, wsClientsMessagesData, wsClientsDosCases }: IsDOSArgs) => {
   let result = false;
   const lastTimestamp = wsClientsMessagesData.get(ws);
   wsClientsMessagesData.set(ws, timestamp);

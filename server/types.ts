@@ -13,3 +13,16 @@ export interface ExtendedWebSocket extends WebSocket {
   clients: object[];
 }
 
+export interface PingClientArgs {
+  wsInstance: { clients: Set<ExtendedWebSocket> };
+  timestamps: Map<object, number>;
+  dosCases: Map<object, number>;
+}
+
+export interface IsDOSArgs {
+  ws: WebSocket;
+  timestamp: number;
+  wsClientsMessagesData: Map<object, number>;
+  wsClientsDosCases: Map<object, number>;
+}
+

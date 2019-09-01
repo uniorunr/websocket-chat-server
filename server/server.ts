@@ -27,7 +27,7 @@ wss.on('connection', (ws: ExtendedWebSocket) => {
   ws.on('message', (message: string) => {
     if (!isJSON(message) || blockedClients.has(ws)) return;
     const now = Date.now();
-    const dosMessageSequence = isDOS(ws, now, wsClientsTimestamps, wsClientsDosCases);
+    const dosMessageSequence = isDOS({ ws, now, wsClientsTimestamps, wsClientsDosCases });
     if (dosMessageSequence) {
       blockedClients.add(ws);
       setTimeout(() => blockedClients.delete(ws), blockTimeout);
@@ -55,7 +55,7 @@ wss.on('connection', (ws: ExtendedWebSocket) => {
   });
 });
 
-pingClient(wss, wsClientsTimestamps, wsClientsDosCases);
+pingClient({ wss, wsClientsTimestamps, wsClientsDosCases });
 
 server.listen(process.env.PORT || 8080, () => {
   console.log(`Server on`);
