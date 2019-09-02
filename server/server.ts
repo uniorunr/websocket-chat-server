@@ -47,7 +47,7 @@ wss.on('connection', (ws: ExtendedWebSocket) => {
       if (messages.length >= 1000) messages = messages.slice(1, 1000);
 
       wss.clients.forEach((client: WebSocket) => {
-        if (client.readyState === WebSocket.OPEN) {
+        if (client.readyState === WebSocketWS.OPEN) {
           client.send(JSON.stringify([messageObj]));
         }
       });

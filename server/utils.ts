@@ -10,12 +10,12 @@ const isJSON = (data: string) => {
   return res;
 };
 
-const pingClient = ({ wsInstance, timestamps, dosCases}: PingClientArgs) => {
+const pingClient = ({ wss, wsClientsTimestamps, wsClientsDosCases }: PingClientArgs) => {
   setInterval(() => {
-    wsInstance.clients.forEach((ws) => {
+    wss.clients.forEach((ws) => {
       if (!ws.isAlive) {
-        timestamps.delete(ws);
-        dosCases.delete(ws);
+        wsClientsTimestamps.delete(ws);
+        wsClientsDosCases.delete(ws);
         return ws.terminate();
       }
       ws.isAlive = false;
@@ -24,12 +24,12 @@ const pingClient = ({ wsInstance, timestamps, dosCases}: PingClientArgs) => {
   }, 10000);
 };
 
-const isDOS = ({ ws, timestamp, wsClientsMessagesData, wsClientsDosCases }: IsDOSArgs) => {
+const isDOS = ({ ws, now, wsClientsTimestamps, wsClientsDosCases }: IsDOSArgs) => {
   let result = false;
-  const lastTimestamp = wsClientsMessagesData.get(ws);
-  wsClientsMessagesData.set(ws, timestamp);
+  const lastTimestamp = wsClientsTimestamps.get(ws);
+  wsClientsTimestamps.set(ws, now);
 
-  if (lastTimestamp && timestamp - lastTimestamp < 200) {
+  if (lastTimestamp && now - lastTimestamp < 200) {
     const lastCount = wsClientsDosCases.get(ws) || 0;
     const count = lastCount + 1;
     if (count >= 3) {

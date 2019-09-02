@@ -14,15 +14,15 @@ export interface ExtendedWebSocket extends WebSocket {
 }
 
 export interface PingClientArgs {
-  wsInstance: { clients: Set<ExtendedWebSocket> };
-  timestamps: Map<object, number>;
-  dosCases: Map<object, number>;
+  wss: { clients: Set<ExtendedWebSocket> };
+  wsClientsTimestamps: Map<object, number>;
+  wsClientsDosCases: Map<object, number>;
 }
 
 export interface IsDOSArgs {
   ws: WebSocket;
-  timestamp: number;
-  wsClientsMessagesData: Map<object, number>;
+  now: number;
+  wsClientsTimestamps: Map<object, number>;
   wsClientsDosCases: Map<object, number>;
 }
 
