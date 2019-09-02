@@ -7,7 +7,7 @@ import { Message, ExtendedWebSocket } from './types';
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ server, maxPayload: 1024 });
 
 let messages: Message[] = [];
 const wsClientsTimestamps = new Map();
