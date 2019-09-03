@@ -2,6 +2,8 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const uuidv4 = require('uuid/v4');
+const MongoClient = require('mongodb').MongoClient;
+require('dotenv').config();
 const { isJSON, pingClient, isDOS } = require('./utils');
 import { Message, ExtendedWebSocket } from './types';
 
@@ -9,53 +11,68 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server, maxPayload: 1024 });
 
-let messages: Message[] = [];
 const wsClientsTimestamps = new Map();
 const wsClientsDosCases = new Map();
 const blockedClients = new Set();
 const blockTimeout = 30000;
 
-wss.on('connection', (ws: ExtendedWebSocket) => {
-  ws.isAlive = true;
+const uri = process.env.MONGODB_CONNECTION_STRING;
+const client = new MongoClient(uri, { useNewUrlParser: true });
+client.connect(async (err: Error) => {
+  if (err) {
+    console.error('Error occurred while connecting to MongoDB Atlas...\n', err);
+  }
 
-  ws.on('pong', () => {
+  const collection = client.db("websocket").collection("messages");
+
+  wss.on('connection', async (ws: ExtendedWebSocket) => {
     ws.isAlive = true;
-  });
 
-  ws.send(JSON.stringify(messages.slice(0).reverse()));
+    ws.on('pong', () => {
+      ws.isAlive = true;
+    });
 
-  ws.on('message', (message: string) => {
-    if (!isJSON(message) || blockedClients.has(ws)) return;
-    const now = Date.now();
-    const dosMessageSequence = isDOS({ ws, now, wsClientsTimestamps, wsClientsDosCases });
-    if (dosMessageSequence) {
-      blockedClients.add(ws);
-      setTimeout(() => blockedClients.delete(ws), blockTimeout);
-      return;
-    }
+    const messages = await collection.find({}).toArray();
+    ws.send(JSON.stringify(messages.slice(0).reverse()));
 
-    const { from: author, message: messageFromClient } = JSON.parse(message);
-    if (!!author && !!messageFromClient) {
-      const messageObj: Message = {
-        from: author,
-        message: messageFromClient,
-        id: uuidv4(),
-        time: now,
-      };
-      messages.push(messageObj);
+    ws.on('message', async (message: string) => {
+      if (!isJSON(message) || blockedClients.has(ws)) return;
+      const now = Date.now();
+      const dosMessageSequence = isDOS({ ws, now, wsClientsTimestamps, wsClientsDosCases });
+      if (dosMessageSequence) {
+        blockedClients.add(ws);
+        setTimeout(() => blockedClients.delete(ws), blockTimeout);
+        return;
+      }
 
-      if (messages.length >= 1000) messages = messages.slice(1, 1000);
+      const { from: author, message: messageFromClient } = JSON.parse(message);
+      if (!!author && !!messageFromClient) {
+        const messageObj: Message = {
+          from: author,
+          message: messageFromClient,
+          id: uuidv4(),
+          time: now,
+        };
 
-      wss.clients.forEach((client: WebSocket) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify([messageObj]));
+        wss.clients.forEach((client: WebSocket) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify([messageObj]));
+          }
+        });
+
+        await collection.insertOne(messageObj);
+        const messages = await collection.find({}).toArray();
+        const messagesArrLength = messages.length;
+        if (messagesArrLength > 5) {
+          const diff = messagesArrLength - 5;
+          messages.slice(0, diff).forEach(async (message: Message) => await collection.deleteOne(message));
         }
-      });
-    }
+      }
+    });
   });
-});
 
-pingClient({ wss, wsClientsTimestamps, wsClientsDosCases });
+  pingClient({ wss, wsClientsTimestamps, wsClientsDosCases });
+});
 
 server.listen(process.env.PORT || 8080, () => {
   console.log(`Server on`);
