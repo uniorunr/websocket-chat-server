@@ -63,8 +63,8 @@ client.connect(async (err: Error) => {
         await collection.insertOne(messageObj);
         const messages = await collection.find({}).toArray();
         const messagesArrLength = messages.length;
-        if (messagesArrLength > 5) {
-          const diff = messagesArrLength - 5;
+        if (messagesArrLength > 1000) {
+          const diff = messagesArrLength - 1000;
           messages.slice(0, diff).forEach(async (message: Message) => await collection.deleteOne(message));
         }
       }
