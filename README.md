@@ -3,9 +3,9 @@ WebSocket server based on Node.js. The server implements bidirectional communica
 
 WS server URL - `wss://ws-chat-uni.herokuapp.com/`
 
-### Getting started
+### How it works
 
-The message that is sent from the Сlient must strictly follow the protocol:
+The message sent by the Client must strictly comply with the following protocol:
 ```js
 {
   from: String,
@@ -14,9 +14,9 @@ The message that is sent from the Сlient must strictly follow the protocol:
 ```
 Note, that WebSocket `send()` method accepts a string as an argument, so above object should be stringified.
 
-After a successful connection to the server, you will receive an array of **all** messages from the server. Then, when somebody (includes you) sends some message to the server, you will receive an array that contains only **one** this message.
+After a successful connection to the server, you will receive an array of **all** messages from the server. Then, when somebody (includes you) sends some message to the server, you will receive an array that contains only **one** that message.
 
-A message that you receive from server strictly follow protocol:
+Messages that you receive from the server strictly comply with the following protocol:
 ```js
 [{
   from: String,
