@@ -15,6 +15,7 @@ const wsClientsTimestamps = new Map();
 const wsClientsDosCases = new Map();
 const blockedClients = new Set();
 const blockTimeout = 30000;
+const pingInterval = 10000;
 
 const uri = process.env.MONGODB_CONNECTION_STRING;
 const mongoClient = new MongoClient(uri, { useNewUrlParser: true });
@@ -68,7 +69,7 @@ mongoClient.connect(async (err: Error) => {
     });
   });
 
-  pingClient({ wss, wsClientsTimestamps, wsClientsDosCases });
+  pingClient({ wss, wsClientsTimestamps, wsClientsDosCases, pingInterval });
 });
 
 server.listen(process.env.PORT || 8080, () => {

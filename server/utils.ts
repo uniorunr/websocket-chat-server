@@ -10,7 +10,7 @@ const isJSON = (data: string) => {
   return res;
 };
 
-const pingClient = ({ wss, wsClientsTimestamps, wsClientsDosCases }: PingClientArgs) => {
+const pingClient = ({ wss, wsClientsTimestamps, wsClientsDosCases, pingInterval }: PingClientArgs) => {
   setInterval(() => {
     wss.clients.forEach((ws) => {
       if (!ws.isAlive) {
@@ -21,7 +21,7 @@ const pingClient = ({ wss, wsClientsTimestamps, wsClientsDosCases }: PingClientA
       ws.isAlive = false;
       ws.ping(null, false, true);
     });
-  }, 10000);
+  }, pingInterval);
 };
 
 const isDOS = ({ ws, now, wsClientsTimestamps, wsClientsDosCases }: IsDOSArgs) => {

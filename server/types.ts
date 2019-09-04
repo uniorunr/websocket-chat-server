@@ -17,6 +17,7 @@ export interface PingClientArgs {
   wss: { clients: Set<ExtendedWebSocket> };
   wsClientsTimestamps: Map<object, number>;
   wsClientsDosCases: Map<object, number>;
+  pingInterval: number;
 }
 
 export interface IsDOSArgs {
