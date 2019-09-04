@@ -17,13 +17,10 @@ const blockedClients = new Set();
 const blockTimeout = 30000;
 
 const uri = process.env.MONGODB_CONNECTION_STRING;
-const client = new MongoClient(uri, { useNewUrlParser: true });
-client.connect(async (err: Error) => {
-  if (err) {
-    console.error('Error occurred while connecting to MongoDB Atlas...\n', err);
-  }
+const mongoClient = new MongoClient(uri, { useNewUrlParser: true });
 
-  const collection = client.db("websocket").collection("messages");
+mongoClient.connect(async (err: Error) => {
+  if (err) console.error('Error occurred while connecting to MongoDB Atlas...\n', err);
 
   wss.on('connection', async (ws: ExtendedWebSocket) => {
     ws.isAlive = true;
@@ -32,6 +29,7 @@ client.connect(async (err: Error) => {
       ws.isAlive = true;
     });
 
+    const collection = mongoClient.db("websocket").collection("messages");
     const messages = await collection.find({}).toArray();
     ws.send(JSON.stringify(messages.slice(0).reverse()));
 
