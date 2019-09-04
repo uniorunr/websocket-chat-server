@@ -24,7 +24,6 @@ mongoClient.connect(async (err: Error) => {
 
   wss.on('connection', async (ws: ExtendedWebSocket) => {
     ws.isAlive = true;
-
     ws.on('pong', () => {
       ws.isAlive = true;
     });
@@ -59,9 +58,9 @@ mongoClient.connect(async (err: Error) => {
         });
 
         await collection.insertOne(messageObj);
-        const messages = await collection.find({}).toArray();
-        const messagesArrLength = messages.length;
+        const messagesArrLength = await collection.countDocuments({});
         if (messagesArrLength > 1000) {
+          const messages = await collection.find({}).toArray();
           const diff = messagesArrLength - 1000;
           messages.slice(0, diff).forEach(async (message: Message) => await collection.deleteOne(message));
         }
